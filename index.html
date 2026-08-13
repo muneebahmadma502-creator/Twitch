@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Twitch</title>
+<style>
+  :root {
+    --bg-main: #0e0e10;
+    --bg-nav: #18181b;
+    --bg-sidebar: #18181b;
+    --bg-card: #1f1f23;
+    --purple: #9147ff;
+    --purple-hover: #772ce8;
+    --text-primary: #efeff1;
+    --text-secondary: #adadb8;
+    --border-color: #303032;
+    --live-red: #eb0400;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font-family: "Inter", "Roobert", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+  }
+  a { text-decoration:none; color:inherit; }
+  button { font-family:inherit; cursor:pointer; border:none; }
+
+  /* NAV */
+  .topnav {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background: var(--bg-nav);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border-color);
+    gap: 16px;
+  }
+  .nav-left { display:flex; align-items:center; gap:16px; }
+  .logo {
+    display:flex; align-items:center; gap:8px;
+    font-weight:800; font-size:20px; color:var(--purple);
+    letter-spacing: -0.5px;
+  }
+  .logo svg { width:28px; height:28px; }
+  .nav-browse {
+    display:flex; align-items:center; gap:6px;
+    font-weight:600; padding:6px 10px; border-radius:4px;
+  }
+  .nav-browse:hover { background:#2f2f35; }
+  .dots-btn {
+    background:none; color:var(--text-primary); font-size:18px;
+    padding:6px 8px; border-radius:4px;
+  }
+  .dots-btn:hover { background:#2f2f35; }
+
+  .nav-center { flex:1; display:flex; justify-content:center; max-width:600px; margin:0 auto; }
+  .search-wrap {
+    display:flex; width:100%; max-width:500px;
+  }
+  .search-input {
+    flex:1;
+    background:#18181b;
+    border:1px solid #464649;
+    border-right:none;
+    color:var(--text-primary);
+    padding:8px 14px;
+    border-radius:4px 0 0 4px;
+    font-size:14px;
+  }
+  .search-input:focus { outline:none; border-color:var(--purple); }
+  .search-btn {
+    background:#2f2f35;
+    border:1px solid #464649;
+    border-left:none;
+    padding:0 16px;
+    border-radius:0 4px 4px 0;
+    color:var(--text-primary);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .search-btn:hover { background:#464649; }
+
+  .nav-right { display:flex; align-items:center; gap:10px; }
+  .icon-btn {
+    position:relative;
+    background:#2f2f35;
+    width:36px; height:36px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-primary);
+  }
+  .icon-btn:hover { background:#464649; }
+  .badge {
+    position:absolute; top:-4px; right:-4px;
+    background:var(--live-red);
+    color:#fff; font-size:10px; font-weight:700;
+    min-width:16px; height:16px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 4px;
+  }
+  .btn-login {
+    background:transparent; color:var(--text-primary);
+    padding:8px 16px; border-radius:4px; font-weight:600;
+  }
+  .btn-login:hover { background:#2f2f35; }
+  .btn-signup {
+    background:var(--purple); color:#fff;
+    padding:8px 16px; border-radius:4px; font-weight:600;
+  }
+  .btn-signup:hover { background:var(--purple-hover); }
+
+  /* LAYOUT */
+  .layout { display:flex; }
+  .sidebar {
+    width:240px;
+    background:var(--bg-sidebar);
+    border-right:1px solid var(--border-color);
+    height: calc(100vh - 53px);
+    overflow-y:auto;
+    flex-shrink:0;
+  }
+  .sidebar-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px 8px;
+    font-weight:700; font-size:13px; color:var(--text-secondary);
+    text-transform:none;
+  }
+  .sidebar-header .collapse { color:var(--text-secondary); font-size:14px; }
+  .channel-item {
+    display:flex; align-items:center; gap:10px;
+    padding:6px 16px;
+  }
+  .channel-item:hover { background:#26262c; cursor:pointer; }
+  .channel-avatar {
+    width:32px; height:32px; border-radius:50%;
+    object-fit:cover; flex-shrink:0;
+    background:#464649;
+  }
+  .channel-info { flex:1; min-width:0; }
+  .channel-name { font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .channel-game { font-size:12px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .channel-viewers {
+    display:flex; align-items:center; gap:4px;
+    font-size:12px; color:var(--text-secondary);
+    flex-shrink:0;
+  }
+  .live-dot { width:6px; height:6px; border-radius:50%; background:var(--live-red); }
+
+  /* MAIN CONTENT */
+  .main-content { flex:1; padding:20px; overflow:hidden; }
+
+  .featured-wrap {
+    display:flex; align-items:center; gap:8px;
+  }
+  .carousel-arrow {
+    background:none; color:var(--text-secondary); font-size:24px;
+    width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+    border-radius:50%; flex-shrink:0;
+  }
+  .carousel-arrow:hover { background:#2f2f35; color:#fff; }
+
+  .featured-stream {
+    flex:1;
+    display:flex;
+    background:#1f1f23;
+    border-radius:6px;
+    overflow:hidden;
+    height:460px;
+  }
+  .video-area {
+    flex:1;
+    position:relative;
+    background:#000;
+    background-image: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.55)), url('https://images.unsplash.com/photo-1444464666168-49d633b86797?w=1200&q=80');
+    background-size:cover;
+    background-position:center;
+  }
+  .live-badge {
+    position:absolute; top:12px; left:12px;
+    background:var(--live-red); color:#fff;
+    font-size:12px; font-weight:800; letter-spacing:0.3px;
+    padding:3px 6px; border-radius:3px;
+  }
+  .video-topbar {
+    position:absolute; top:12px; right:16px;
+    color:#fff; font-size:12px; background:rgba(0,0,0,0.5);
+    padding:4px 10px; border-radius:3px; max-width:60%;
+  }
+  .bird-list {
+    position:absolute; top:50px; left:14px;
+    color:#f5d76e; font-size:12px; line-height:1.6;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  }
+  .video-bottom-left {
+    position:absolute; bottom:14px; left:14px;
+    color:#fff; font-size:13px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  }
+  .video-bottom-right {
+    position:absolute; bottom:16px; right:16px;
+    color:#fff; font-size:26px; font-weight:700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+  }
+
+  .channel-panel {
+    width:300px;
+    background:#18181b;
+    padding:20px;
+    flex-shrink:0;
+  }
+  .panel-header { display:flex; gap:12px; margin-bottom:14px; }
+  .panel-avatar {
+    width:48px; height:48px; border-radius:50%;
+    object-fit:cover; background:#464649;
+  }
+  .panel-name { color:var(--purple); font-weight:700; font-size:16px; }
+  .panel-category { color:var(--purple); font-size:13px; margin-top:2px; }
+  .panel-viewers { color:var(--text-secondary); font-size:13px; margin-top:2px; }
+  .panel-tags { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+  .tag {
+    background:#2f2f35; color:var(--text-primary);
+    font-size:12px; font-weight:600;
+    padding:4px 10px; border-radius:4px;
+  }
+
+  /* LIVE ON Twitch */
+  .section-title {
+    color:var(--purple); font-size:20px; font-weight:700;
+    margin: 28px 0 16px;
+  }
+  .stream-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap:16px;
+  }
+  .stream-card { cursor:pointer; }
+  .thumb-wrap {
+    position:relative;
+    aspect-ratio: 16/9;
+    background:#2f2f35;
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .thumb-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+  .thumb-badges { position:absolute; top:8px; left:8px; display:flex; gap:6px; }
+  .thumb-live {
+    background:var(--live-red); color:#fff; font-size:11px; font-weight:800;
+    padding:2px 5px; border-radius:3px;
+  }
+  .thumb-viewers {
+    position:absolute; bottom:8px; left:8px;
+    background:rgba(0,0,0,0.6); color:#fff; font-size:11px; font-weight:700;
+    padding:2px 6px; border-radius:3px;
+  }
+  .card-meta { display:flex; gap:10px; margin-top:8px; }
+  .card-avatar { width:36px; height:36px; border-radius:50%; background:#464649; flex-shrink:0; object-fit:cover; }
+  .card-title { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .card-channel { font-size:13px; color:var(--text-secondary); }
+  .card-game { font-size:13px; color:var(--text-secondary); }
+
+  /* BOTTOM BANNER */
+  .promo-banner {
+    position:sticky; bottom:0;
+    background:var(--purple);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 24px;
+    margin-top:24px;
+  }
+  .promo-left { display:flex; align-items:center; gap:16px; }
+  .promo-icon {
+    width:36px; height:36px; border-radius:50%;
+    background:#000; display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+  }
+  .promo-text strong { font-weight:800; }
+  .promo-text span { color:#e9d9ff; margin-left:6px; }
+  .promo-signup {
+    background:#fff; color:#18181b; font-weight:700;
+    padding:8px 20px; border-radius:20px;
+  }
+  .promo-signup:hover { background:#e9e9e9; }
+
+  ::-webkit-scrollbar { width:10px; }
+  ::-webkit-scrollbar-track { background:var(--bg-main); }
+  ::-webkit-scrollbar-thumb { background:#464649; border-radius:5px; }
+
+  @media (max-width: 900px) {
+    .sidebar { display:none; }
+    .featured-stream { flex-direction:column; height:auto; }
+    .channel-panel { width:auto; }
+    .video-area { height:300px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <a href="#" class="logo">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 2L2 7v13h6v2h4l3-3h5l4-4V2H4z" fill="#9147ff"/>
+        <path d="M6 6h2v6H6V6zm5 0h2v6h-2V6z" fill="#0e0e10"/>
+      </svg>
+      Twitch
+    </a>
+    <a href="#" class="nav-browse">Browse</a>
+    <button class="dots-btn">⋯</button>
+  </div>
+
+  <div class="nav-center">
+    <div class="search-wrap">
+      <input class="search-input" type="text" placeholder="Search" />
+      <button class="search-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11 11L15 15M12.5 7A5.5 5.5 0 1 1 1.5 7a5.5 5.5 0 0 1 11 0z" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="nav-right">
+    <button class="icon-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4z" stroke="currentColor" stroke-width="1.8"/></svg>
+      <span class="badge">14</span>
+    </button>
+    <button class="btn-login">Log In</button>
+    <button class="btn-signup">Sign Up</button>
+    <button class="icon-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span>Live Channels</span>
+      <span class="collapse">⇥</span>
+    </div>
+    <div id="channelList"></div>
+  </aside>
+
+  <main class="main-content">
+    <div class="featured-wrap">
+      <button class="carousel-arrow">‹</button>
+      <div class="featured-stream">
+        <div class="video-area">
+          <span class="live-badge">LIVE</span>
+          <span class="video-topbar">All streams are hosted under official broadcaster license</span>
+          <div class="bird-list">
+            Blue Tit<br>Great Tit<br>Coal Tit<br>Long-tailed Tit<br>Chaffinch<br>Goldfinch<br>Greenfinch<br>Dunnock<br>Blackbird<br>Robin<br>Wren<br>Blackcap<br>Whitethroat<br>Willow Warbler<br>Goldcrest<br>Nuthatch<br>Treecreeper<br>House Sparrow<br>Grey Wagtail<br>Great-spotted Woodpecker<br>Kingfisher
+          </div>
+          <div class="video-bottom-left">Check out Instagram and TikTok to see more @wildwatcher</div>
+          <div class="video-bottom-right">Bird count: 25</div>
+        </div>
+        <div class="channel-panel">
+          <div class="panel-header">
+            <img class="panel-avatar" src="https://i.pravatar.cc/48?img=13" alt="avatar">
+            <div>
+              <div class="panel-name">wildwatcher</div>
+              <div class="panel-category">Animals, Aquariums...</div>
+            </div>
+          </div>
+          <div class="panel-viewers">143 viewers</div>
+          <div class="panel-tags">
+            <span class="tag">Science</span>
+            <span class="tag">English</span>
+          </div>
+        </div>
+      </div>
+      <button class="carousel-arrow">›</button>
+    </div>
+
+    <div class="section-title">Live on Twitch</div>
+    <div class="stream-grid" id="streamGrid"></div>
+  </main>
+</div>
+
+<div class="promo-banner">
+  <div class="promo-left">
+    <div class="promo-icon">👾</div>
+    <div class="promo-text"><strong>Join the Twitch community!</strong><span>Discover the best live streams anywhere.</span></div>
+  </div>
+  <button class="promo-signup">Sign Up</button>
+</div>
+
+<script>
+  const channels = [
+    { name:"Nadia", game:"Just Chatting", viewers:"4.8K", img:"https://i.pravatar.cc/32?img=5" },
+    { name:"Kaelen", game:"League of Legends", viewers:"31.6K", img:"https://i.pravatar.cc/32?img=12" },
+    { name:"pixelmoo", game:"League of Legends", viewers:"1.9K", img:"https://i.pravatar.cc/32?img=21" },
+    { name:"Slyggo", game:"VALORANT", viewers:"3.8K", img:"https://i.pravatar.cc/32?img=32" },
+    { name:"247Jynx", game:"Always On", viewers:"794", img:"https://i.pravatar.cc/32?img=44" },
+    { name:"Valor_Pax", game:"VALORANT", viewers:"4.3K", img:"https://i.pravatar.cc/32?img=51" },
+    { name:"Ludvane", game:"Lies of P", viewers:"4.5K", img:"https://i.pravatar.cc/32?img=15" },
+    { name:"Gorgez", game:"Dota 2", viewers:"11.6K", img:"https://i.pravatar.cc/32?img=25" },
+    { name:"Faidera", game:"Apex Legends", viewers:"1.9K", img:"https://i.pravatar.cc/32?img=36" },
+    { name:"mira_outside", game:"Just Chatting", viewers:"35", img:"https://i.pravatar.cc/32?img=47" },
+  ];
+
+  const listEl = document.getElementById('channelList');
+  channels.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'channel-item';
+    div.innerHTML = `
+      <img class="channel-avatar" src="${c.img}" alt="${c.name}">
+      <div class="channel-info">
+        <div class="channel-name">${c.name}</div>
+        <div class="channel-game">${c.game}</div>
+      </div>
+      <div class="channel-viewers"><span class="live-dot"></span>${c.viewers}</div>
+    `;
+    listEl.appendChild(div);
+  });
+
+  const streamThumbs = [
+    "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=500&q=80",
+    "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=500&q=80",
+    "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=500&q=80",
+    "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=500&q=80",
+    "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&q=80",
+    "https://images.unsplash.com/photo-1556438064-2d7646166914?w=500&q=80",
+    "https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=500&q=80",
+    "https://images.unsplash.com/photo-1610041321420-a596dd6d0e19?w=500&q=80"
+  ];
+  const streamData = [
+    {title:"Guess the word! chill vibes", channel:"Nadia", game:"Just Chatting", viewers:"12.4K"},
+    {title:"Ranked grind to Challenger", channel:"Kaelen", game:"League of Legends", viewers:"31.6K"},
+    {title:"Late night city walk", channel:"street_wanderer", game:"IRL", viewers:"62.5K"},
+    {title:"Chill coding stream", channel:"devdrift", game:"Software & Game Dev", viewers:"2.1K"},
+    {title:"Speedrun attempts %", channel:"quickpace", game:"Retro Games", viewers:"5.7K"},
+    {title:"Late night lofi + chat", channel:"moonlitmusic", game:"Music", viewers:"3.3K"},
+    {title:"Ranked VALORANT grind", channel:"Valor_Pax", game:"VALORANT", viewers:"4.3K"},
+    {title:"Dota 2 pro scrims", channel:"Gorgez", game:"Dota 2", viewers:"11.6K"}
+  ];
+
+  const gridEl = document.getElementById('streamGrid');
+  streamData.forEach((s,i) => {
+    const div = document.createElement('div');
+    div.className = 'stream-card';
+    div.innerHTML = `
+      <div class="thumb-wrap">
+        <img src="${streamThumbs[i % streamThumbs.length]}" alt="${s.title}">
+        <div class="thumb-badges"><span class="thumb-live">LIVE</span></div>
+        <div class="thumb-viewers">${s.viewers} viewers</div>
+      </div>
+      <div class="card-meta">
+        <img class="card-avatar" src="https://i.pravatar.cc/36?img=${i+2}" alt="${s.channel}">
+        <div>
+          <div class="card-title">${s.title}</div>
+          <div class="card-channel">${s.channel}</div>
+          <div class="card-game">${s.game}</div>
+        </div>
+      </div>
+    `;
+    gridEl.appendChild(div);
+  });
+</script>
+
+</body>
+</html>
